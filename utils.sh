@@ -905,7 +905,7 @@ function undeclareFunctions() {
         if isInString "$line" "function " &&\
            isInString "$line" "() {"; then
 
-            splitString "$line" "^function " 2
+            splitString "$line" "function " 2
             splitString "$retval" "() {" 1
             if [ -z "$destination" ]; then
                 if [[ "$3" == "retval" ]]; then
