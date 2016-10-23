@@ -864,10 +864,14 @@ function isBashOlder() {
 #-------------------------------------------------------------------------------
 # I: - The file to check for function declarations
 #    - The destination file to store the function unsets (optional)
-# P: Store all function declarations of a bash script to a destination file. If
-#    no destination ha sbeen specified,the functions declared in the bash script
-#    will be undeclared.
-# O: /
+#    - A flag guard used to specify if we want the functions to be returned in
+#      retval as an array (optional)
+# P: Store all function declarations of a bash script to a destination file.
+#    If no destination has been specified, the functions declared in the bash
+#    script will be undeclared except if a third argument "retval" is declared.
+# O: - retval: untouched, except if the destination is empty and the third
+#      argument is "retval", the functions declared in the bash script will be
+#      returned in retval as an array.
 #-------------------------------------------------------------------------------
 function undeclareFunctions() {
     local file="$1"
@@ -881,6 +885,10 @@ function undeclareFunctions() {
     if [ ! -r "$file" ]; then
         error "\"$file\" is not readable. Aborted."
         return
+    fi
+
+    if [[ "$3" == "retval" ]]; then
+        local funcs=()
     fi
 
     # Erase the file
@@ -900,10 +908,20 @@ function undeclareFunctions() {
             splitString "$line" "^function " 2
             splitString "$retval" "() {" 1
             if [ -z "$destination" ]; then
-                unset -f $retval
+                if [[ "$3" == "retval" ]]; then
+                    funcs+=("$retval")
+                else
+                    unset -f $retval
+                fi
             else
                 echo "unset -f $retval" >> "$destination"
             fi
         fi
     done < "$file"
+
+    # Copy the local array to the global variable (quotes are indeed needed)
+    # http://stackoverflow.com/a/24323275/3514658
+    if [[ "$3" == "retval" ]]; then
+        retval=("${funcs[@]}")
+    fi
 }
