@@ -624,6 +624,48 @@ function splitString() {
 }
 
 #-------------------------------------------------------------------------------
+# I: - The string to work on
+#    - The delimiter string (optional, default to ';')
+# P: Cut the string according to the delimiter string and select the field we
+#    want to keep
+# O: retval: the substring retval
+#-------------------------------------------------------------------------------
+function explodeString() {
+    unset retval
+
+    local string=$1
+    if [[ -z "$2" ]]; then
+        local delimiter=';'
+    else
+        local delimiter=$2
+    fi
+    local -i stringPointer=0
+    local -i delimiterCheck=0
+    local -i substringStart=0
+    local -i substringLength=0
+
+    while ((stringPointer < ${#string})); do
+        delimiterPointer=0
+        delimiterCheck=$stringPointer
+        while [[ "${string:delimiterCheck:1}" == "${delimiter:delimiterPointer:1}" ]] && \
+            ((delimiterCheck < ${#string})) && \
+            ((delimiterPointer < ${#delimiter})); do
+            ((delimiterCheck++))
+            ((delimiterPointer++))
+        done
+        if ((delimiterPointer == ${#delimiter})); then
+            ((stringPointer+=$delimiterPointer))
+            retval+=(${string:$substringStart:$substringLength})
+            substringStart=$stringPointer
+            substringLength=0
+        else
+            ((stringPointer++))
+            ((substringLength++))
+        fi
+    done
+}
+
+#-------------------------------------------------------------------------------
 # I: - String to trim
 #    - The caracters to trim either as a simple string or a regex
 # P: Remove the characters defined in the second argument (regex supported)
