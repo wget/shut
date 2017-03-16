@@ -371,6 +371,10 @@ function getArgumentValue() {
 
     done
 
+    if [[ "$found" == false ]]; then
+        retval=""
+        return 1
+    fi
     retval="$2"
     return 0
 }
