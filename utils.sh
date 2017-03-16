@@ -288,7 +288,7 @@ function requireDeps() {
 # P: Get the value of the argument, otherwize nothing is returned. Error if the
 #    argument is not a parameter or if, itself is not followed by a valid
 #    argument value.
-# O: - retval: The value of the argument
+# O: - retval: The value of the argument. Empty if not valid/existent.
 #    - return value: 0 if no issue, 1 if an issue occured
 #-------------------------------------------------------------------------------
 function getArgumentValue() {
@@ -304,13 +304,14 @@ function getArgumentValue() {
     local -a argument=()
 
     # Check if the argument name specified has a valid format and split our
-    # argument
+    # argument as an array stored in "argument".
     local stringProgress
     IFS='|'
-    # Do not quote, otherwise it will not word split, and the loop will only run once.
+    # Do not quote, otherwise it will not word split, and the loop will only
+    # run once.
     for i in $1; do
         # If we have several or statements (pipes |), put a warning message
-        # different as the a format issue.
+        # different as this is a format issue.
         if [[ -z "$i" ]]; then
             warning "Empty pipe (|) condition detected in '$stringProgress${effectBright}<HERE>${effectReset}${1##$stringProgress}'. Continuing..."
             stringProgress="$stringProgress$i|"
@@ -341,7 +342,7 @@ function getArgumentValue() {
             continue
         fi
 
-        # Check if this is the right argument
+        # Check if this is the argument we are looking for
         found=false
         for i in "${argument[@]}"; do
             if [[ $i == "$1" ]]; then
@@ -602,7 +603,8 @@ function splitString() {
         delimiterPointer=0
         delimiterCheck=$stringPointer
         while [[ "${string:delimiterCheck:1}" == "${delimiter:delimiterPointer:1}" ]] && \
-            ((delimiterCheck < ${#string})) && ((delimiterPointer < ${#delimiter})); do
+            ((delimiterCheck < ${#string})) && \
+            ((delimiterPointer < ${#delimiter})); do
             ((delimiterCheck++))
             ((delimiterPointer++))
         done
@@ -620,7 +622,6 @@ function splitString() {
             ((stringPointer++))
             ((substringLength++))
         fi
-
 
     done
     retval=${string:$substringStart:$substringLength}
