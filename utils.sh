@@ -517,6 +517,114 @@ function strpos() {
 }
 
 #-------------------------------------------------------------------------------
+# I: - The pattern
+# P: Create the table used to build the partial match of pattern substrings in
+# the Knuth-Morris-Pratt algorithm (cf. https://goo.gl/LYejQ9 and
+# http://stackoverflow.com/a/14080422/3514658)
+# O: - retval: the table
+#    - return value: 1 if issue, 0 if no issue
+#-------------------------------------------------------------------------------
+function kmpBuildFailureFunction() {
+    unset retval
+
+    if [[ -z "$1" ]]; then
+        retval=()
+        return 1
+    fi
+    local i=0
+    local j=0
+    local pattern="$1"
+    local patternLength=${#pattern}
+
+    # These statements are always true
+    # - The first element of the list of prefixes is an empty string
+    # - The second element of the list of prefixes is the first letter of the
+    #   pattern;
+    retval=(0)
+    retval+=(0)
+
+    for ((i = 2; i <= patternLength; i++)); do
+        j=${retval[i - 1]}
+        while true; do
+            if [[ "${pattern:j:1}" == "${pattern:i - 1:1}" ]]; then
+                retval[i]=$((j + 1))
+                break
+            fi
+
+            if ((j == 0)); then
+                retval[i]=0
+                break
+            fi
+
+            j=${retval[j]}
+        done
+    done
+    return 0
+}
+
+#-------------------------------------------------------------------------------
+# I: - The string
+#    - The delimiter string (optional, default to ';')
+# P: Returns an array of strings, each of which is a substring of string formed
+#    by splitting it on boundaries formed by the string delimiter.
+# O: - retval: all the substrings
+#    - return value: 0
+#-------------------------------------------------------------------------------
+function explode() {
+    unset retval
+
+    local text="$1"
+    if [[ -z "$2" ]]; then
+        local pattern=';'
+    else
+        local pattern="$2"
+    fi
+    local -i n=${#text}
+    local -i m=${#pattern}
+
+    kmpBuildFailureFunction "$pattern"
+    local ff=("${retval[@]}")
+    unset retval
+
+    # The initial state of the automaton (the table of failure function)
+    # corresponding to the empty string.
+    local -i i=0
+    # The first character of the text
+    local -i j=0
+    local -i matchLoc=0
+
+    # while ((j+i<n && i<m)); do
+    while true; do
+        if ((j == n)); then
+            echo "end of text"
+            echo "Substring: '${text:matchLoc:j-matchLoc}'"
+            retval+=("${text:matchLoc:j-matchLoc}")
+            break;
+        fi
+
+        echo "[$j] testing if ${text:j:1} equals ${pattern:i:1} (i=$i)"
+        if [[ "${text:j:1}" == "${pattern:i:1}" ]]; then
+            ((i++))
+            ((j++))
+            if ((i == m)); then
+                echo "Match found: ff: ${ff[i]}; i=$i; j=$j"
+                echo "Substring: '${text:matchLoc:j-i-matchLoc}'"
+                retval+=("${text:matchLoc:j-i-matchLoc}")
+                matchLoc=$j
+            fi
+
+        elif ((i > 0)); then
+            echo "here i>0 i was $i"
+            i=${ff[i]}
+            echo "i now $i"
+        else
+            echo "here j++= j=$j"
+            ((j++))
+        fi
+    done
+}
+
+#-------------------------------------------------------------------------------
 # I: - The string
 #    - The offset
 #    - The length (optional)
@@ -626,48 +734,6 @@ function splitString() {
     done
     retval=${string:$substringStart:$substringLength}
     return 0
-}
-
-#-------------------------------------------------------------------------------
-# I: - The string to work on
-#    - The delimiter string (optional, default to ';')
-# P: Cut the string according to the delimiter string and select the field we
-#    want to keep
-# O: retval: the substring retval
-#-------------------------------------------------------------------------------
-function explodeString() {
-    unset retval
-
-    local string=$1
-    if [[ -z "$2" ]]; then
-        local delimiter=';'
-    else
-        local delimiter=$2
-    fi
-    local -i stringPointer=0
-    local -i delimiterCheck=0
-    local -i substringStart=0
-    local -i substringLength=0
-
-    while ((stringPointer < ${#string})); do
-        delimiterPointer=0
-        delimiterCheck=$stringPointer
-        while [[ "${string:delimiterCheck:1}" == "${delimiter:delimiterPointer:1}" ]] && \
-            ((delimiterCheck < ${#string})) && \
-            ((delimiterPointer < ${#delimiter})); do
-            ((delimiterCheck++))
-            ((delimiterPointer++))
-        done
-        if ((delimiterPointer == ${#delimiter})); then
-            ((stringPointer+=$delimiterPointer))
-            retval+=(${string:$substringStart:$substringLength})
-            substringStart=$stringPointer
-            substringLength=0
-        else
-            ((stringPointer++))
-            ((substringLength++))
-        fi
-    done
 }
 
 #-------------------------------------------------------------------------------
