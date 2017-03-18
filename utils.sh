@@ -593,32 +593,23 @@ function explode() {
     local -i j=0
     local -i matchLoc=0
 
-    # while ((j+i<n && i<m)); do
     while true; do
         if ((j == n)); then
-            echo "end of text"
-            echo "Substring: '${text:matchLoc:j-matchLoc}'"
             retval+=("${text:matchLoc:j-matchLoc}")
             break;
         fi
 
-        echo "[$j] testing if ${text:j:1} equals ${pattern:i:1} (i=$i)"
         if [[ "${text:j:1}" == "${pattern:i:1}" ]]; then
             ((i++))
             ((j++))
             if ((i == m)); then
-                echo "Match found: ff: ${ff[i]}; i=$i; j=$j"
-                echo "Substring: '${text:matchLoc:j-i-matchLoc}'"
                 retval+=("${text:matchLoc:j-i-matchLoc}")
                 matchLoc=$j
             fi
 
         elif ((i > 0)); then
-            echo "here i>0 i was $i"
             i=${ff[i]}
-            echo "i now $i"
         else
-            echo "here j++= j=$j"
             ((j++))
         fi
     done
