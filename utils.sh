@@ -1,29 +1,5 @@
 #!/usr/bin/env bash
 
-#-------------------------------------------------------------------------------
-# README:
-#-------------------------------------------------------------------------------
-# This lib is only compatible with recent Bash versions and needs to be loaded
-# with a slash, otherwise Bash will search in the PATH and may not find it. So
-# use source ./utils.sh and not source utils.sh
-#
-# When the user execute the script not in the same directory as this library,
-# the latter will not be found. The lib needs to be loaded with ".
-# ${0%/*}/utils.sh". Taking the absolute directory does not work when using
-# debugging tools like bashdb as the latter reset that path to /bin, because $0
-# is /bin/bashdb.
-#
-# WARNING: This script uses a global variable called "retval" to return
-# elements from a function. "retval" must be reset or initialized in each
-# function using that variable.
-#
-# Even if that global variable violates programming concepts, this avoids
-# subshells specified with the $( ) or ` ` syntaxes and offers thus way better
-# performance. Also as returning values from a function requires to use echo,
-# and the use of a subshell (e.g.: returnStatement=$(myFunction "args")),
-# exiting from these subshells did not propagate to the parent shell. Using
-# that global variable solves the issue.
-#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # I: /
