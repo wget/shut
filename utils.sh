@@ -568,6 +568,109 @@ function requireDeps() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn var_dump()
+## @details Dumps information about the variable passed as argument.
+## @param $var The variable name (thus without the dollar char $). If the
+## dollar sign is used, the value will be used instead.
+## @note This function makes use of the evil eval statement. While the latter
+## has been sanitized, the check is rather naive. We initially used the retval
+## statement but this was rather cumbersome for the end user. The latter had
+## always to backup its retval variable to check another one.
+## @retval 0 Always return 0.
+#-------------------------------------------------------------------------------
+function var_dump() {
+
+    # Need to split declaration and assignation, otherwise the return value is
+    # incorrect.
+    local varType
+
+    while (($#)); do
+
+        local var="$1"
+        shift
+        local -i i=0
+
+        # Try to sanitize the evil use of eval. (If you're reading this, sorry).
+        if strpos "$var" ";" ||
+           strpos "$var" "(" ||
+           strpos "$var" ")" ||
+           strpos "$var" "$" ||
+           strpos "$var" "{" ||
+           strpos "$var" "}"; then
+            continue
+        fi
+
+        varType=$(declare -p $var 2>/dev/null)
+
+        # If the declare statement fails (e.g. trying to call it directly on
+        # a string, or on a number, without using a variable name).
+        if (($? != 0)); then
+            # echo "FAILS"
+            # Cast to a number if we assume this is a number
+            if isNumber "$var"; then
+                echo "int($var)"
+            else
+                # Unable to check if the argument is a string by checking if the
+                # argument is passed with " or ' as these chars are interpreted by
+                # the shell.
+                echo "string(${#var}) \"$var\""
+            fi
+            continue
+        fi
+
+        # Since Bash 4.3, a reference to another variable can be added, browse all
+        # the references in order to get the parent type.
+        # src.: http://stackoverflow.com/a/42877229/3514658
+        local reg='^declare -n [^=]+=\"([^\"]+)\"$'
+        while [[ $varType =~ $reg ]]; do
+            varType=$(declare -p ${BASH_REMATCH[1]})
+        done
+
+        case "${varType#declare -}" in
+             a*)
+                local -i len=0
+                eval 'len=${#'$var'[@]} 2>/dev/null'
+                echo "array(${len}) {"
+                for ((i = 0; i < $len; i++)); do
+                    echo "  [$i]=>"
+                    echo -n "  "
+                    eval 'var_dump "${'$var'[i]}"'
+                done
+                echo "}"
+                ;;
+            A*)
+                # Needs Bash 4+
+                # src.: http://stackoverflow.com/a/3467959/3514658
+                local keys=()
+                eval 'keys=(${!'$var'[@]}) 2>/dev/null'
+                local -i len=${#keys[@]}
+                echo "array(${len}) {"
+                for ((i = 0; i < $len; i++)); do
+                    eval 'local value=${'$var'[${keys[i]}]}'
+                    if isNumber "${keys[i]}"; then
+                        echo "  [${keys[i]}]=>"
+                    else
+                        echo "  [\"${keys[i]}\"]=>"
+                    fi
+                    echo -n "  "
+                    var_dump "$value"
+                done
+                echo "}"
+                ;;
+            i*)
+                echo "int($var)"
+                ;;
+            x*)
+                echo "export(${#var}) \"$var\""
+                ;;
+            *)
+                echo "string(${#var}) \"$var\""
+                ;;
+        esac
+    done
+}
+
+#-------------------------------------------------------------------------------
 ## @fn getArgumentValue()
 ## @details Get the value of the argument, otherwize nothing is returned. Error
 ## if the argument is not a parameter or if, itself is not followed by a valid
