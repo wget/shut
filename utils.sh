@@ -301,6 +301,7 @@ function getDate() {
 ## the priority specified.
 ## @param $msg The message to send to the logs.
 ## @param $level Level of the error corresponds to the priority code used in
+## @param $script The name of the script responsible of the issue
 ## traditional syslog implementations.The priority can be prefixed by a facility
 ## which is a code used to specify the type of the program.
 ## src.: https://en.wikipedia.org/wiki/Syslog#Facility
@@ -312,8 +313,13 @@ function log() {
     else
         local level="$2"
     fi
+
     if type logger >/dev/null 2>&1; then
-        logger -p "$level" "${BASH_SOURCE[ ${#BASH_SOURCE[@]} - 1 ]##*/}" "$1"
+        if [[ -z "$3" ]]; then
+            logger -p "$level" "${BASH_SOURCE[ ${#BASH_SOURCE[@]} - 1 ]##*/}: $1"
+        else
+            logger -p "$level" "$3: $1"
+        fi
     fi
 }
 
@@ -345,9 +351,7 @@ function info() {
     unset retval
 
     if isRunInBackground $$; then
-        log -p user.info  \
-            "$scriptName"
-            "$*"
+        log user.info "$*"
     fi
 
     # Even if run in the background, this does not mean the output is
@@ -384,7 +388,7 @@ function warning() {
     unset retval
 
     if isRunInBackground $$; then
-        log -p user.warning "$scriptName" "$*"
+        log user.warning "$*"
     fi
 
     if [[ ! -t 1 ]]; then
@@ -416,7 +420,7 @@ function error() {
     unset retval
 
     if isRunInBackground $$; then
-        log -p user.err "$scriptName" "$*"
+        log user.err "$*"
     fi
 
     if [[ ! -t 2 ]]; then
@@ -449,7 +453,7 @@ function die() {
     unset retval
 
     if isRunInBackground $$; then
-        log -p user.err "$scriptName" "$*"
+        log user.err "$*"
     fi
 
     if [[ ! -t 2 ]]; then
@@ -940,7 +944,7 @@ function strpos() {
 }
 
 #-------------------------------------------------------------------------------
-## @fn kmpBuildFailureFunction()
+## @fn __kmpBuildFailureFunction()
 ## @details Create the table used to build the partial match of pattern
 ## substrings in the Knuth-Morris-Pratt algorithm (cf. https://goo.gl/LYejQ9 and
 ## http://stackoverflow.com/a/14080422/3514658).
@@ -1551,8 +1555,8 @@ function pathinfo() {
 ## @param $pid The pid of the process to check.
 ## @return In $retval, true if the process is actually really run in
 ## background, false if it isn't. Empty if an issue occurred.
-## @retval 0 If no issue occurred and the script is run in background.
-## @retval 1 If an issue occurred or the script is not run in background.
+## @retval 0 If no issue occurred.
+## @retval 1 If an issue occurred.
 #-------------------------------------------------------------------------------
 function isRunInBackground() {
     unset retval
@@ -1567,11 +1571,12 @@ function isRunInBackground() {
         return 1
     fi
 
-    # Declare and assign separately to avoid SC2155
-    # src.: https://github.com/koalaman/shellcheck/wiki/SC2155
-    local status
-    status="$(</proc/$pid/stat)"
+    # This is crucial to leave the variable unquoted and have a clean IFS
+    IFS=$' \t\n'
+    local status=($(</proc/$pid/stat))
 
+    # If reading the proc stat file fails, both array element will be empty and
+    # the following condition will execute.
     if [[ "${status[3]}" == "${status[7]}" ]]; then
         retval=true
         return 0
@@ -1621,7 +1626,7 @@ function in_array() {
 ## compare the first array.
 ## @return In $retval, true if the array are equal, false if they are not.
 ## @retval 0 If the array are equal.
-## @retval 1 If the array are bnot equal or an issue occurred.
+## @retval 1 If the array are not equal or an issue occurred.
 #-------------------------------------------------------------------------------
 function isArraysEqual() {
 
@@ -1635,7 +1640,7 @@ function isArraysEqual() {
     # local -a arr1=("${!1}")
     # local -a arr2=("${!2}")
     if isBashOlder 4 3 0; then
-        errorWithLog "isArraysEqual() accessing using dereference with -n"\
+        error "isArraysEqual() accessing using dereference with -n"\
             "needs at least Bash 4.3. Arrays reported as different."
         retval=false
         return 1
