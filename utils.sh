@@ -542,7 +542,7 @@ function checkDeps() {
     done
     unset i
 
-    if (( ${#retval[@]} == 0 )); then
+    if ((${#retval[@]} == 0)); then
         return 0
     fi
     return 1
@@ -600,12 +600,9 @@ function var_dump() {
             continue
         fi
 
-        varType=$(declare -p $var 2>/dev/null)
-
         # If the declare statement fails (e.g. trying to call it directly on
         # a string, or on a number, without using a variable name).
-        if (($? != 0)); then
-            # echo "FAILS"
+        if ! varType=$(declare -p "$var" 2>/dev/null); then
             # Cast to a number if we assume this is a number
             if isNumber "$var"; then
                 echo "int($var)"
@@ -623,18 +620,18 @@ function var_dump() {
         # src.: http://stackoverflow.com/a/42877229/3514658
         local reg='^declare -n [^=]+=\"([^\"]+)\"$'
         while [[ $varType =~ $reg ]]; do
-            varType=$(declare -p ${BASH_REMATCH[1]})
+            varType=$(declare -p "${BASH_REMATCH[1]}")
         done
 
         case "${varType#declare -}" in
              a*)
                 local -i len=0
-                eval 'len=${#'$var'[@]} 2>/dev/null'
+                eval 'len=${#'"$var"'[@]} 2>/dev/null'
                 echo "array(${len}) {"
-                for ((i = 0; i < $len; i++)); do
+                for ((i = 0; i < len; i++)); do
                     echo "  [$i]=>"
                     echo -n "  "
-                    eval 'var_dump "${'$var'[i]}"'
+                    eval 'var_dump "${'"$var"'[i]}"'
                 done
                 echo "}"
                 ;;
@@ -642,17 +639,19 @@ function var_dump() {
                 # Needs Bash 4+
                 # src.: http://stackoverflow.com/a/3467959/3514658
                 local keys=()
-                eval 'keys=(${!'$var'[@]}) 2>/dev/null'
+                eval 'keys=(${!'"$var"'[@]}) 2>/dev/null'
                 local -i len=${#keys[@]}
                 echo "array(${len}) {"
-                for ((i = 0; i < $len; i++)); do
-                    eval 'local value=${'$var'[${keys[i]}]}'
+                for ((i = 0; i < len; i++)); do
+                    local value
+                    eval 'value=${'"$var"'[${keys[i]}]}'
                     if isNumber "${keys[i]}"; then
                         echo "  [${keys[i]}]=>"
                     else
                         echo "  [\"${keys[i]}\"]=>"
                     fi
                     echo -n "  "
+
                     var_dump "$value"
                 done
                 echo "}"
@@ -835,7 +834,7 @@ function progress() {
 
     # POSIX shell does not support float. Need to use bc otherwise.
     # Compute percent and reuse same variable
-    percent=$(( ($1 * 100) / $2 ))
+    percent=$((($1 * 100) / $2))
 
     # To strip zeroes padding use $((10#$min)), but we prefer printf in order
     # to store in a variable without using subshells. Also using printf to
@@ -921,7 +920,7 @@ function strpos() {
     local pattern="$2"
     local -i offset="$3"
     local -i stringSize=0
-    if (( offset < 0 )); then
+    if ((offset < 0)); then
         stringSize=${#string}
         ((stringSize-=offset))
         string=${string:$stringSize}
@@ -930,7 +929,7 @@ function strpos() {
     fi
     stringSize=${#string}
     string="${string%$pattern}"
-    if (( stringSize == ${#string} )); then
+    if ((stringSize == ${#string})); then
         # shellcheck disable=SC2178
         retval=false
         return 1
@@ -1140,11 +1139,11 @@ function substr() {
     # If the start is considered as invalid, Bash considers it as 0 any way.
     local -i start=$2
 
-    if (( start < 0 )); then
+    if ((start < 0)); then
         start=$((${#string} + start))
     fi
 
-    if (( ${#string} < start )); then
+    if ((${#string} < start)); then
         # shellcheck disable=SC2178
         retval=""
         return 1
@@ -1152,13 +1151,13 @@ function substr() {
 
     # If the length is considered as invalid, Bash considers it as 0 any way.
     local -i length=$3
-    if (( length < 0 && ${#string} + length < start)); then
+    if ((length < 0 && ${#string} + length < start)); then
         # shellcheck disable=SC2178
         retval=""
         return 1
     fi
 
-    if (( length )); then
+    if ((length)); then
         # shellcheck disable=SC2178
         # shellcheck disable=SC2128
         retval=${string:$start:$length}
@@ -1229,6 +1228,19 @@ function __charmask() {
     return 0
 }
 
+#-------------------------------------------------------------------------------
+## @fn __trim()
+## @private
+## @details Trim a string according to the location from which we want to trim
+## (left, right or both sides).
+## @param $string The string to trim.
+## @param $pattern The pattern of characters (escaped chars supported) to trim
+## from the string.
+## @param $mode The mode (1, 2 or 3 corresponding to left, right or trimming
+## from both sides).
+## @return In $retval, the array of bit mask.
+## @retval 0 Always, as up to now, we do not check if the pattern is valid.
+#-------------------------------------------------------------------------------
 function __trim() {
     # We do not want to interpret/expand the values of the string as the latter
     # might contains chars like '\t' which could be interpreted otherwise
@@ -1242,7 +1254,6 @@ function __trim() {
     printf -v pattern "$2"
     local -i len=${#string}
     local -i mode=$3
-    local -i trimmed=0
     local -i start=0
     local -i charNumber=0
     local -i i=0
@@ -1297,7 +1308,6 @@ function __trim() {
 
     else
         if ((mode & 1)); then
-            echo "DEBUG MODE 3RD 1"
             for ((i = 0; i < len; i++)); do
                 if [[ "${string:i:1}" < $' ' ||
                       "${string:i:1}" == $' ' ]] &&

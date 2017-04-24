@@ -2,27 +2,110 @@
 
 . "${0%/*}/utils.sh"
 
-function testInitColors() {
+function testSetColors() {
 
     # Remove exported colors that may be resident in the shell environment as
     # these functions are sourced from the bash profile.
-    for i in $(env | grep text | cut -d '=' -f 1); do unset "$i"; done
+    unsetColors
 
-    initColors
+    setColors
 
     local string="$textRed Hello world $colorReset"
     assertEquals "${#string}" "22"
+
+    unsetColors
 }
 
 function testInitEffects() {
 
     # Remove effect variables that may be in the environment
-    for i in $(env | grep effect | cut -d '=' -f 1); do unset "$i"; done
+    unsetEffects
 
-    initEffects
+    setEffects
 
     local string="$effectBright Hello world $effectReset"
     assertEquals "${#string}" "21"
+
+    unsetEffects
+}
+
+function testVarDump1() {
+    local -a hello=("hello world!" 15 "earth" "love")
+    local compare='array(4) {
+  [0]=>
+  string(12) "hello world!"
+  [1]=>
+  int(15)
+  [2]=>
+  string(5) "earth"
+  [3]=>
+  string(4) "love"
+}'
+
+    local output=$(var_dump hello)
+    assertEquals "$output" "$compare"
+
+    unset hello
+    unset compare
+    unset output
+}
+
+function testVarDump2() {
+    local -a hello=("hello world!" 15 "earth" "love")
+    local compare='string(12) "hello world!"
+int(15)
+string(5) "earth"
+string(4) "love"'
+
+    local output=$(var_dump "${hello[@]}")
+    assertEquals "$output" "$compare"
+
+    unset hello
+    unset compare
+    unset output
+}
+
+function testVarDump3() {
+    local hello="world"
+    local output=$(var_dump hello)
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset hello
+    unset output
+}
+
+function testVarDump4() {
+    local output=$(var_dump "hello")
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset output
+}
+
+function testVarDump5() {
+    local output=$(var_dump 'hello')
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset output
+}
+
+function testVarDump6() {
+    local -A hello=(["hello world"]="earth" [3]="love" ["linux"]="4 ever")
+    local compare='array(4) {
+  [3]=>
+  string(4) "love"
+  ["hello"]=>
+  export(0) ""
+  ["world"]=>
+  export(0) ""
+  ["linux"]=>
+  string(6) "4 ever"
+}'
+
+    local output=$(var_dump hello)
+    assertEquals "$output" "$output"
+
+    unset hello
+    unset compare
 }
 
 function testStrpos1() {
