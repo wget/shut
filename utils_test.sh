@@ -406,18 +406,104 @@ function testTrim3() {
     unset retval
 }
 
-function testTrim4() {
+function testLtrim1() {
     unset retval
 
-    local binary="\x09Example string\x0A";
-    trim "$binary" "\x00..\x1F"
+    local text="\t\tThese are a few words :) ...  "
+
+    ltrim "$text" " \t."
     local returnValue=$?
 
-    assertEquals "${#retval}" "14"
-    assertEquals "$retval" "Example string"
+    assertEquals "${#retval}" "30"
+    assertEquals "$retval" "These are a few words :) ...  "
     assertEquals "$returnValue" "0"
 
-    unset binary
+    unset text
+    unset returnValue
+    unset retval
+}
+
+function testLtrim2() {
+    unset retval
+
+    local hello="Hello World"
+
+    ltrim "$hello" "Hdle"
+    local returnValue=$?
+
+    assertEquals "${#retval}" "7"
+    assertEquals "$retval" "o World"
+    assertEquals "$returnValue" "0"
+
+    unset hello
+    unset returnValue
+    unset retval
+}
+
+function testLtrim3() {
+    unset retval
+
+    local hello="Hello World"
+
+    ltrim "$hello" "HdWr"
+    local returnValue=$?
+
+    assertEquals "${#retval}" "10"
+    assertEquals "$retval" "ello World"
+    assertEquals "$returnValue" "0"
+
+    unset hello
+    unset returnValue
+    unset retval
+}
+
+function testRtrim1() {
+    unset retval
+
+    local text="\t\tThese are a few words :) ...  "
+
+    rtrim "$text" " \t."
+    local returnValue=$?
+
+    assertEquals "${#retval}" "26"
+    assertEquals "$retval" "		These are a few words :)"
+    assertEquals "$returnValue" "0"
+
+    unset text
+    unset returnValue
+    unset retval
+}
+
+function testRtrim2() {
+    unset retval
+
+    local hello="Hello World"
+
+    rtrim "$hello" "Hdle"
+    local returnValue=$?
+
+    assertEquals "${#retval}" "9"
+    assertEquals "$retval" "Hello Wor"
+    assertEquals "$returnValue" "0"
+
+    unset hello
+    unset returnValue
+    unset retval
+}
+
+function testRtrim3() {
+    unset retval
+
+    local hello="Hello World"
+
+    rtrim "$hello" "HdWr"
+    local returnValue=$?
+
+    assertEquals "${#retval}" "10"
+    assertEquals "$retval" "Hello Worl"
+    assertEquals "$returnValue" "0"
+
+    unset hello
     unset returnValue
     unset retval
 }

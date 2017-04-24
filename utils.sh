@@ -1002,13 +1002,25 @@ function substr() {
 #     local string="$1"
 #
 #     local mask="$2"
+#
+#     local -i mode="$3"
 #     # if [[ -z "$mask" ]]; then
 #     # # Detect if the pattern to trim is a regex.
 #
 #
-#     if [[ "${regex:0:2}" == "/^" && "]]; then
+#     # if [[ "${regex:0:2}" == "/^" && "]]; then
 #
-#     local regex='(.*)'$2'(.*)'
+#     local regex
+#     
+#     if ((mode & 1)); then
+#         regex='(.*)'$2
+#     fi
+#
+#     if ((mode & 2)); then
+#         regex=$regex'(.*)'
+#     fi
+#
+#     # '(.*)'$2'(.*)'
 #
 #     if [[ "${regex:0:1}" == "^" ]]; then
 #         regex='^'$2''
@@ -1039,7 +1051,7 @@ function substr() {
 #     retval="$string"
 #     return 0
 # }
-#
+
 
 #-------------------------------------------------------------------------------
 ## @fn __charmask()
@@ -1085,7 +1097,6 @@ function __charmask() {
               "${string:i + 3:1}" == "${string:i:1}" ]]; then
 
             end=$(LC_CTYPE=C printf '%d' "'${string:i + 3:1}")
-            echo "DEBUG: $end"
             for ((j = charNumber; j < end; j++)); do
                 retval[charNumber + j]=1
             done
@@ -1097,17 +1108,6 @@ function __charmask() {
         fi
     done
 
-    echo "DEBUG MASK CHAR AFTER:"
-    for (( i = 0 ; i < ${#retval[@]}; i++)); do
-        if ((i % 16 == 0)); then 
-            if ((i != 0)); then
-                echo ""
-            fi
-        fi
-        echo -n "${retval[i]} "
-    done
-    echo ""
-
     return 0
 }
 
@@ -1117,14 +1117,11 @@ function __trim() {
     local string=""
     # shellcheck disable=2059
     printf -v string "$1"
-    echo "DEBUG STRING EXPANDED '$string'"
     local pattern=""
     # Disable shellcheck. The latter complains the variable will be
     # interpreted, which is especially what we want to do.
     # shellcheck disable=2059
-    echo "DEBUG PATTERN BEFORE EXPAND: '$2'"
     printf -v pattern "$2"
-    echo -e "DEBUG PATTERN EXPANDED '$pattern'"
     local -i len=${#string}
     local -i mode=$3
     local -i trimmed=0
@@ -1133,110 +1130,90 @@ function __trim() {
     local -i i=0
 
     if [[ "$pattern" ]]; then
-        echo "DEBUG 1"
         if ((len == 1)); then
-            if ((mode % 1)); then
-        echo "DEBUG MODE 1"
+            if ((mode & 1)); then
                 for ((i = 0; i < len; i++)); do
                     if [[ "${string:i:1}" == "${pattern:0:1}" ]]; then
-                        ((trimmed++))
+                        ((start++))
                     else
                         break
                     fi
                 done
-                ((len-=trimmed))
-                ((start+=trimmed))
             fi
-            if ((mode % 2)); then
-        echo "DEBUG MODE 2"
+            if ((mode & 2)); then
                 if ((len > 0)); then
-                    ((i = len - 1))
-                    while ((i != 0)); do
+                    for ((i = len - 1; i != 0; i--)); do
                         if [[ "${string:i:1}" == "${pattern:0:1}" ]]; then
                             ((len--))
                         else
                             break
                         fi
-                        ((i--))
                     done
                 fi
             fi
         else
-            echo "DEBUG ENTERING THE ELSE "
             __charmask "$pattern"
-            # for ((j=0; j < 256; j++)); do echo "${retval[j]}"; done
-            if ((mode % 1)); then
-        echo "DEBUG MODE SND 1"
+            if ((mode & 1)); then
                 for ((i = 0; i < len; i++)); do
                     charNumber=$(LC_CTYPE=C printf '%d' "'${string:i:1}")
                     if [[ "${retval[charNumber]}" == "1" ]]; then
-                        ((trimmed++))
+                        ((start++))
                     else
                         break
                     fi
                 done
-                ((len-=trimmed))
-                ((start+=trimmed))
             fi
-            if ((mode % 2)); then
-        echo "DEBUG MODE SND 2"
+            if ((mode & 2)); then
                 if ((len > 0)); then
-                    ((i = len - 1))
-                    while ((i != 0)); do
-                        echo "WE ARE HERE"
-                        charNumber=$(LC_CTYPE=C printf '%d' "'${string:i:1}")
+                    for ((i = len; i > 0; i--)); do
+                        charNumber=$(LC_CTYPE=C printf '%d' "'${string:i - 1:1}")
                         if [[ "${retval[charNumber]}" == "1" ]]; then
-                            echo "DEBUG SND2 REDUCE LEN"
                             ((len--))
                         else
                             break
                         fi
-                        ((i--))
                     done
                 fi
             fi
         fi
 
     else
-        if ((mode % 1)); then
-        echo "DEBUG MODE 3RD 1"
+        if ((mode & 1)); then
+            echo "DEBUG MODE 3RD 1"
             for ((i = 0; i < len; i++)); do
                 if [[ "${string:i:1}" < $' ' ||
                       "${string:i:1}" == $' ' ]] &&
-                   [[ "${string:i:1}" == $'\n' ||
+                   [[ "${string:i:1}" == $' ' ||
+                      "${string:i:1}" == $'\n' ||
                       "${string:i:1}" == $'\r' ||
                       "${string:i:1}" == $'\t' ||
-                      "${string:i:1}" == $'\v' ||
-                      "${string:i:1}" == $'\0' ]]; then
-                    ((trimmed++))
+                      "${string:i:1}" == $'\v' ]]; then
+                    ((start++))
                 else
                     break
                 fi
             done
-            ((len -= trimmed))
-            ((start += trimmed))
         fi
-        if ((mode % 2)); then
-        echo "DEBUG MODE 3RD 2"
+        if ((mode & 2)); then
             if ((len > 0)); then
-                ((i = len - 1))
-                while ((i != 0)); do
+                for ((i = len; i != 0; i--)); do
                     if [[ "${string:i:1}" < $' ' ||
                           "${string:i:1}" == $' ' ]] &&
-                       [[ "${string:i:1}" == $'\n' ||
+                       [[ "${string:i:1}" == $' ' ||
+                          "${string:i:1}" == $'\n' ||
                           "${string:i:1}" == $'\r' ||
                           "${string:i:1}" == $'\t' ||
-                          "${string:i:1}" == $'\v' ||
-                          "${string:i:1}" == $'\0' ]]; then
+                          "${string:i:1}" == $'\v' ]]; then
                         ((len--))
                     else
                         break
                     fi
-                    ((i--))
                 done
             fi
         fi
     fi
+
+    ((len-=start))
 
     if (("${#string}" == len)); then
         # shellcheck disable=SC2178
@@ -1247,25 +1224,47 @@ function __trim() {
     fi
 }
 
+#-------------------------------------------------------------------------------
+## @fn trim()
+## @details Strip whitespace (or other characters) from the beginning and end
+## of a string
+## @param The string to trim.
+## @param The mask of character to trim. By default, the mask corresponds to
+## " \t\n\r\v". Contrary to PHP, handling \0 (the NUL byte) is not possible.
+## Chars like '\x0B' are thus not taken into account. Even if there are way to
+## interpret the NUL characters, there are other dusty corners to handle. Even
+## if we were able to handle them, we will still have to handle them for the
+## string to trim itself. src.: http://stackoverflow.com/a/24511770/3514658
+## Range of characters can be specified with 2 dots '..'. e.g.: a..z
+## @return In $retval, the trimmed string.
+## @retval 0 Always, as up to now, we do not check if the pattern or string are
+## valid.
+#-------------------------------------------------------------------------------
+function trim() {
+    unset retval
+    __trim "$1" "$2" 3
+    return 0
+}
+
+#-------------------------------------------------------------------------------
+## @fn trim()
+## @details Same as trim() but only trim chars from the left.
+#-------------------------------------------------------------------------------
 function ltrim() {
     unset retval
     __trim "$1" "$2" 1
     return 0
 }
 
+#-------------------------------------------------------------------------------
+## @fn trim()
+## @details Same as trim() but only trim chars from the right.
+#-------------------------------------------------------------------------------
 function rtrim() {
     unset retval
     __trim "$1" "$2" 2
     return 0
 }
-
-function trim() {
-    unset retval
-    echo "IN TRIM PATTERN: '$2'"
-    __trim "$1" "$2" 3
-    return 0
-}
-
 
 #-------------------------------------------------------------------------------
 ## @fn getScriptDirectory()
