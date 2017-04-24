@@ -5,8 +5,7 @@
 ## @defgroup Effects Terminal effects
 
 #-------------------------------------------------------------------------------
-## @fn initColors()
-## @brief 
+## @fn setColors()
 ## @details Import ANSI terminal colors. Implement foreground and background
 ## colors for 8/16 colors terminal ## emulators. These variables are exported
 ## that way, they are available to subprocesses as well.
@@ -14,7 +13,7 @@
 ##       https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 ## @note Bright colors are often the same for normal and light color versions.
 #-------------------------------------------------------------------------------
-function initColors() {
+function setColors() {
 
 ## @{
 ## @addtogroup Colors
@@ -135,10 +134,52 @@ function initColors() {
 }
 
 #-------------------------------------------------------------------------------
-## @fn initEffects()
+## @fn unsetColors()
+## @details Simply unset the exported colors
+#-------------------------------------------------------------------------------
+function unsetColors() {
+    unset textBlack
+    unset textRed
+    unset textGreen
+    unset textYellow
+    unset textBlue
+    unset textMagenta
+    unset textCyan
+    unset textLightGray
+    unset textDefault
+    unset textDarkGray
+    unset textLightRed
+    unset textLightGreen
+    unset textLightYellow
+    unset textLightBlue
+    unset textLightMagenta
+    unset textLightCyan
+    unset textWhite
+    unset backgroundBlack
+    unset backgroundRed
+    unset backgroundGreen
+    unset backgroundYellow
+    unset backgroundBlue
+    unset backgroundMagenta
+    unset backgroundCyan
+    unset backgroundLightGray
+    unset backgroundDefault
+    unset backgroundDarkGray
+    unset backgroundLightRed
+    unset backgroundLightGreen
+    unset backgroundLightYellow
+    unset backgroundLightBlue
+    unset backgroundLightMagenta
+    unset backgroundLightCyan
+    unset backgroundWhite
+    unset colorReset
+}
+
+#-------------------------------------------------------------------------------
+## @fn setEffects()
 ## @details Import ANSI terminal effects.
 #-------------------------------------------------------------------------------
-function initEffects() {
+function setEffects() {
 
 ## @{
 ## @addtogroup Effects
@@ -199,6 +240,30 @@ function initEffects() {
     export effectReset="[0m"
 
 ## @}
+}
+
+#-------------------------------------------------------------------------------
+## @fn unsetEffects()
+## @details Import ANSI terminal effects.
+#-------------------------------------------------------------------------------
+function unsetEffects() {
+    unset effectBright
+    unset effectDim
+    unset effectItalic
+    unset effectUnderline
+    unset effectBlink
+    unset effectReverse
+    unset effectHidden
+    unset effectStrikeThrough
+    unset effectBrightReset
+    unset effectDimReset
+    unset effectItalicReset
+    unset effectUnderlineReset
+    unset effectBlinkReset
+    unset effectReverseReset
+    unset effectHiddenReset
+    unset effectStrikeThroughReset
+    unset effectReset
 }
 
 #-------------------------------------------------------------------------------
@@ -295,7 +360,11 @@ function info() {
         return 0
     fi
 
+    setColors
+    setEffects
     echo "[${textGreen}${effectBright}+${colorReset}] $*"
+    unsetColors
+    unsetEffects
     return 0
 }
 
@@ -323,7 +392,11 @@ function warning() {
         return 0
     fi
 
+    setColors
+    setEffects
     echo "[${textYellow}${effectBright}!${colorReset}] $*"
+    unsetColors
+    unsetEffects
     return 0
 }
 
@@ -351,7 +424,11 @@ function error() {
         return 0
     fi
 
+    setColors
+    setEffects
     echoerr "[${textRed}${effectBright}x${colorReset}] $*"
+    unsetColors
+    unsetEffects
     return 0
 }
 
@@ -380,7 +457,11 @@ function die() {
         return 0
     fi
 
+    setColors
+    setEffects
     echoerr "[${textRed}${effectBright}x${colorReset}] $*"
+    unsetColors
+    unsetEffects
     exit 1
 }
 
@@ -401,7 +482,11 @@ function confirm() {
     # String needed when we are cutting our user message in several arguments to
     # hard wrap our source file in our text editor.
     local string="$*"
+    setColors
+    setEffects
     read -p "[${textBlue}${effectBright}?${colorReset}] $string " -n 1 -r
+    unsetColors
+    unsetEffects
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         retval=true
