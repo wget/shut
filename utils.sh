@@ -134,6 +134,14 @@ function setColors() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn set_colors()
+## @details Simple alias to setColors
+#-------------------------------------------------------------------------------
+function set_colors() {
+    setColors
+}
+
+#-------------------------------------------------------------------------------
 ## @fn unsetColors()
 ## @details Simply unset the exported colors
 #-------------------------------------------------------------------------------
@@ -173,6 +181,14 @@ function unsetColors() {
     unset backgroundLightCyan
     unset backgroundWhite
     unset colorReset
+}
+
+#-------------------------------------------------------------------------------
+## @fn unset_colors()
+## @details Simple alias to unsetColors
+#-------------------------------------------------------------------------------
+function unset_colors() {
+    unsetColors
 }
 
 #-------------------------------------------------------------------------------
@@ -243,6 +259,14 @@ function setEffects() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn set_effects()
+## @details Simple alias to setEffects
+#-------------------------------------------------------------------------------
+function set_effects() {
+    setEffects
+}
+
+#-------------------------------------------------------------------------------
 ## @fn unsetEffects()
 ## @details Import ANSI terminal effects.
 #-------------------------------------------------------------------------------
@@ -264,6 +288,14 @@ function unsetEffects() {
     unset effectHiddenReset
     unset effectStrikeThroughReset
     unset effectReset
+}
+
+#-------------------------------------------------------------------------------
+## @fn unset_effects()
+## @details Simple alias to unsetEffects
+#-------------------------------------------------------------------------------
+function unset_effects() {
+    unsetEffects
 }
 
 #-------------------------------------------------------------------------------
@@ -300,7 +332,7 @@ function getDate() {
 ## @details Simple alias to getDate
 #-------------------------------------------------------------------------------
 function get_date() {
-    getDate "$*"
+    getDate
 }
 
 #-------------------------------------------------------------------------------
@@ -338,7 +370,15 @@ function log() {
 ## @param $string The string to display on stderr.
 #-------------------------------------------------------------------------------
 function echoerr() {
-    echo "$*" 1>&2;
+    echo "$@" 1>&2;
+}
+
+#-------------------------------------------------------------------------------
+## @fn echoErr()
+## @details Simple alias to echoerr
+#-------------------------------------------------------------------------------
+function echoErr() {
+    echoerr "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -534,6 +574,14 @@ function isArgument() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn is_argument()
+## @details Simple alias to isArgument
+#-------------------------------------------------------------------------------
+function is_argument() {
+    isArgument "$@"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn checkDeps()
 ## @details Check if the specified commands exist in the PATH.
 ## @param $string A space separated list of items where each correspond to
@@ -559,6 +607,14 @@ function checkDeps() {
         return 0
     fi
     return 1
+}
+
+#-------------------------------------------------------------------------------
+## @fn check_deps()
+## @details Simple alias to checkDeps
+#-------------------------------------------------------------------------------
+function check_deps() {
+    checkDeps "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -595,6 +651,14 @@ function requireDeps() {
         die "${FUNCNAME[1]}: $msg"
     fi
     return 0
+}
+
+#-------------------------------------------------------------------------------
+## @fn require_deps()
+## @details Simple alias to requireDeps
+#-------------------------------------------------------------------------------
+function require_deps() {
+    requireDeps "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -700,6 +764,14 @@ function var_dump() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn varDump()
+## @details Simple alias to var_dump
+#-------------------------------------------------------------------------------
+function varDump() {
+    var_dump "$@"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn progress()
 ## @details Print the progression indicator where the number are padded to the
 ## right on the specified max value. %%PERCENT%% values can be changed to$
@@ -802,6 +874,14 @@ function isNumber() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn is_number()
+## @details Simple alias to isNumber
+#-------------------------------------------------------------------------------
+function is_number() {
+    isNumber "$@"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn isNumberPositive()
 ## @details Check if the string is a number (positive, negative and decimal are
 ## taken into account.
@@ -813,7 +893,7 @@ function isNumber() {
 function isNumberPositive() {
     unset retval
 
-    if [[ "$1" =~ ^+?[0-9]+([.][0-9]+)?$ ]]; then
+    if [[ "$1" =~ ^\+?[0-9]+([.][0-9]+)?$ ]]; then
         # shellcheck disable=SC2178
         retval=true
         return 0
@@ -821,6 +901,14 @@ function isNumberPositive() {
     # shellcheck disable=SC2178
     retval=false
     return 1
+}
+
+#-------------------------------------------------------------------------------
+## @fn is_number_positive()
+## @details Simple alias to isNumberPositive
+#-------------------------------------------------------------------------------
+function is_number_positive() {
+    isNumberPositive "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -1143,6 +1231,14 @@ function substr() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn subStr()
+## @details Simple alias to substr
+#-------------------------------------------------------------------------------
+function subStr() {
+    substr "$@"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn __charmask()
 ## @private
 ## @details Build a bit mask array where each element corresponds to an
@@ -1402,6 +1498,14 @@ function getScriptDirectory() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn get_script_directory()
+## @details Simple alias to getScriptDirectory
+#-------------------------------------------------------------------------------
+function get_script_directory() {
+    getScriptDirectory
+}
+
+#-------------------------------------------------------------------------------
 ## @fn getScriptName()
 ## @details Get the script name from the top of the call stack.
 ## @return In $retval, the name of the script.
@@ -1419,6 +1523,14 @@ function getScriptName() {
     # shellcheck disable=SC2178
     retval="${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]##*/}"
     return 0
+}
+
+#-------------------------------------------------------------------------------
+## @fn get_script_name()
+## @details Simple alias to getScriptName
+#-------------------------------------------------------------------------------
+function get_script_name() {
+    getScriptName "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -1453,6 +1565,14 @@ function basename() {
         retval="${retval%.*}"
     fi
     return 0
+}
+
+#-------------------------------------------------------------------------------
+## @fn baseName()
+## @details Simple alias to basename
+#-------------------------------------------------------------------------------
+function baseName() {
+    basename "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -1517,6 +1637,14 @@ function pathinfo() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn pathInfo()
+## @details Simple alias to pathinfo
+#-------------------------------------------------------------------------------
+function pathInfo() {
+    pathinfo "$@"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn isRunInBackground()
 ## @details Check if the process whose pid has been specified is run in
 ## background or not. Default the current pid.
@@ -1554,6 +1682,46 @@ function isRunInBackground() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn is_run_in_background()
+## @details Simple alias to isRunInBackground
+#-------------------------------------------------------------------------------
+function is_run_in_background() {
+    isRunInBackground "$@"
+}
+
+#-------------------------------------------------------------------------------
+## @fn isRunAsRoot()
+## @details Check if the the current process is run as root.
+## @param $pid The pid of the process to check.
+## @return In $retval, true if the process is actually really run in
+## background, false if it isn't. Empty if an issue occurred.
+## @retval 0 If it is run as root.
+## @retval 1 If it is not run as root.
+#-------------------------------------------------------------------------------
+function isRunAsRoot() {
+    unset retval
+
+    # EID is a bashism. POSIX compliant shells still need to rely on the id
+    # command.
+    # src.: https://askubuntu.com/q/15853#comment735375_15856
+    if ((EUID == 0)); then
+        retval=true
+        return 0
+    fi
+
+    retval=false
+    return 1
+}
+
+#-------------------------------------------------------------------------------
+## @fn is_run_as_root()
+## @details Simple alias to isRunAsRoot
+#-------------------------------------------------------------------------------
+function is_run_as_root() {
+    isRunAsRoot
+}
+
+#-------------------------------------------------------------------------------
 ## @fn in_array()
 ## @details Search if the value is in the array.
 ## @param $pattern The pattern to search for.
@@ -1580,6 +1748,14 @@ function in_array() {
     }
     retval=false
     return 1
+}
+
+#-------------------------------------------------------------------------------
+## @fn inArray()
+## @details Simple alias to inArray
+#-------------------------------------------------------------------------------
+function inArray() {
+    in_array "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -1648,6 +1824,14 @@ function isArraysEqual() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn is_bash_array_equal()
+## @details Simple alias to isBashArraysEqual
+#-------------------------------------------------------------------------------
+function is_bash_arrays_equal() {
+    isBashArraysEqual "$@"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn isBashOlder()
 ## @details Check if bash is older than the one specified.
 ## @param $major Bash major version.
@@ -1685,7 +1869,15 @@ function isBashOlder() {
 }
 
 #-------------------------------------------------------------------------------
-## @fn undeclareFunctions()
+## @fn isBashOlder()
+## @details Simple alias to is_bash_older
+#-------------------------------------------------------------------------------
+function is_bash_older() {
+    isBashOlder "$@"
+}
+
+#-------------------------------------------------------------------------------
+## @fn unsetFunctions()
 ## @details Store all function declarations of a bash script to a destination
 ## file. If no destination has been specified, the functions declared in the
 ## bash script will be undeclared except if a third argument "retval" is
@@ -1701,7 +1893,7 @@ function isBashOlder() {
 ## @retval 0 If no issue occurred.
 ## @retval 1 If an issue occurred.
 #-------------------------------------------------------------------------------
-function undeclareFunctions() {
+function unsetFunctions() {
     local file="$1"
     local destination="$2"
 
@@ -1755,6 +1947,14 @@ function undeclareFunctions() {
         retval=("${funcs[@]}")
     fi
     return 0
+}
+
+#-------------------------------------------------------------------------------
+## @fn unset_functions()
+## @details Simple alias to unsetFunctions
+#-------------------------------------------------------------------------------
+function unset_functions() {
+    unsetFunctions "$@"
 }
 
 # Used to execute the main code only when the script is executed directly not

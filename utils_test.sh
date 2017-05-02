@@ -16,6 +16,20 @@ function testSetColors() {
     unsetColors
 }
 
+function testSetColorsUnderscore() {
+
+    # Remove exported colors that may be resident in the shell environment as
+    # these functions are sourced from the bash profile.
+    unset_colors
+
+    set_colors
+
+    local string="$textRed Hello world $colorReset"
+    assertEquals "${#string}" "22"
+
+    unset_colors
+}
+
 function testInitEffects() {
 
     # Remove effect variables that may be in the environment
@@ -29,92 +43,250 @@ function testInitEffects() {
     unsetEffects
 }
 
-function testVarDump1() {
-    local -a hello=("hello world!" 15 "earth" "love")
-    local compare='array(4) {
-  [0]=>
-  string(12) "hello world!"
-  [1]=>
-  int(15)
-  [2]=>
-  string(5) "earth"
-  [3]=>
-  string(4) "love"
-}'
+function testInitEffectsUnderscore() {
 
-    local output=$(var_dump hello)
-    assertEquals "$output" "$compare"
+    # Remove effect variables that may be in the environment
+    unset_effects
 
-    unset hello
-    unset compare
-    unset output
+    set_effects
+
+    local string="$effectBright Hello world $effectReset"
+    assertEquals "${#string}" "21"
+
+    unset_effects
 }
 
-function testVarDump2() {
-    local -a hello=("hello world!" 15 "earth" "love")
-    local compare='string(12) "hello world!"
-int(15)
-string(5) "earth"
-string(4) "love"'
+function testIsNumber1() {
+    unset retval
 
-    local output=$(var_dump "${hello[@]}")
-    assertEquals "$output" "$compare"
+    isNumber "87yn"
+    local returnValue=$?
 
-    unset hello
-    unset compare
-    unset output
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
 }
 
-function testVarDump3() {
-    local hello="world"
-    local output=$(var_dump hello)
-    assertEquals "$output" 'string(5) "hello"'
+function testIsNumber1Underscore() {
+    unset retval
 
-    unset hello
-    unset output
+    is_number "87yn"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
 }
 
-function testVarDump4() {
-    local output=$(var_dump "hello")
-    assertEquals "$output" 'string(5) "hello"'
+function testIsNumber2() {
+    unset retval
 
-    unset output
+    isNumber "-87"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
 }
 
-function testVarDump5() {
-    local output=$(var_dump 'hello')
-    assertEquals "$output" 'string(5) "hello"'
+function testIsNumber2Underscore() {
+    unset retval
 
-    unset output
+    is_number "-87"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
 }
 
-function testVarDump6() {
-    local -A hello=(["hello world"]="earth" [3]="love" ["linux"]="4 ever")
-    local compare='array(4) {
-  [3]=>
-  string(4) "love"
-  ["hello"]=>
-  export(0) ""
-  ["world"]=>
-  export(0) ""
-  ["linux"]=>
-  string(6) "4 ever"
-}'
+function testIsNumber3() {
+    unset retval
 
-    local output=$(var_dump hello)
-    assertEquals "$output" "$output"
+    isNumber "87.23"
+    local returnValue=$?
 
-    unset hello
-    unset compare
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumber3Underscore() {
+    unset retval
+
+    is_number "87.23"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumber4() {
+    unset retval
+
+    isNumber "87.23.63"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumber4Underscore() {
+    unset retval
+
+    is_number "87.23.63"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive1() {
+    unset retval
+
+    isNumberPositive "87yn"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive1Underscore() {
+    unset retval
+
+    is_number_positive "87yn"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive2() {
+    unset retval
+
+    isNumberPositive "+87"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive2Underscore() {
+    unset retval
+
+    is_number_positive "+87"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive3() {
+    unset retval
+
+    isNumberPositive "+87.23"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive3Underscore() {
+    unset retval
+
+    is_number_positive "+87.23"
+    local returnValue=$?
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive4() {
+    unset retval
+
+    isNumberPositive "+87.23.63"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
+}
+
+function testIsNumberPositive4Underscore() {
+    unset retval
+
+    is_number_positive "+87.23.63"
+    local returnValue=$?
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
 }
 
 function testStrpos1() {
     unset retval
 
-    strpos "hello world" "world"
+    strpos "hello aloha world" "world"
+    local returnValue=$?
 
-    assertEquals "$retval" "6"
+    assertEquals "$retval" "12"
+    assertEquals "$returnValue" "0"
 
+    unset returnValue
+    unset retval
+}
+
+function testStrpos1CamelCase() {
+    unset retval
+
+    strPos "hello aloha world" "world"
+    local returnValue=$?
+
+    assertEquals "$retval" "12"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
     unset retval
 }
 
@@ -122,39 +294,77 @@ function testStrpos2() {
     unset retval
 
     strpos "hello world" "not present"
+    local returnValue=$?
 
-    assertEquals "$retval" "false"
+    assertEquals "$retval" "-1"
+    assertEquals "$returnValue" "1"
 
+    unset returnValue
+    unset retval
+}
+
+function testStrpos2CamelCase() {
+    unset retval
+
+    strPos "hello world" "not present"
+    local returnValue=$?
+
+    assertEquals "$retval" "-1"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
     unset retval
 }
 
 function testStrpos3() {
     unset retval
 
-    strpos "hello world" "not present"
+    strpos "hello world" "world" -3
+    local returnValue=$?
 
-    assertEquals "$?" "1"
+    assertEquals "$retval" "-1"
+    assertEquals "$returnValue" "1"
 
+    unset returnValue
+    unset retval
+}
+
+function testStrpos3CamelCase() {
+    unset retval
+
+    strPos "hello world" "world" -3
+    local returnValue=$?
+
+    assertEquals "$retval" "-1"
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
     unset retval
 }
 
 function testStrpos4() {
     unset retval
 
-    strpos "hello world" "world"
+    strpos "world hello" "world" -3
+    local returnValue=$?
 
-    assertEquals "$?" "0"
+    assertEquals "$retval" "-1"
+    assertEquals "$returnValue" "1"
 
+    unset returnValue
     unset retval
 }
 
-function testStrpos5() {
+function testStrpos4CamelCase() {
     unset retval
 
-    strpos "hello world" "world" -3
+    strPos "world hello" "world" -3
+    local returnValue=$?
 
-    assertEquals "$?" "1"
+    assertEquals "$retval" "-1"
+    assertEquals "$returnValue" "1"
 
+    unset returnValue
     unset retval
 }
 
@@ -164,7 +374,72 @@ function testStrpos5() {
     strpos "hello world" "world" 6
     local returnValue=$?
 
+    assertEquals "$retval" "6"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testStrpos5CamelCase() {
+    unset retval
+
+    strPos "hello world" "world" 6
+    local returnValue=$?
+
+    assertEquals "$retval" "6"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testStrpos6() {
+    unset retval
+
+    strpos "bababa " "ba" 0
+    local returnValue=$?
+
     assertEquals "$retval" "0"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testStrpos6CamelCase() {
+    unset retval
+
+    strPos "bababa " "ba" 0
+    local returnValue=$?
+
+    assertEquals "$retval" "0"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testStrpos7() {
+    unset retval
+
+    strpos "hello;world" ";" 0
+    local returnValue=$?
+
+    assertEquals "$retval" "5"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testStrpos7CamelCase() {
+    unset retval
+
+    strPos "hello;world" ";" 0
+    local returnValue=$?
+
+    assertEquals "$retval" "5"
     assertEquals "$returnValue" "0"
 
     unset returnValue
@@ -312,10 +587,215 @@ function testExplode8() {
     unset retval
 }
 
+function testExplode9() {
+    unset retval
+
+    # Testing with out of bounds
+    explode " " "0       world"
+    local returnValue=$?
+
+    assertEquals "${#retval[@]}" "8"
+    assertEquals "${retval[0]}" "0"
+    assertEquals "${retval[7]}" "world"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testExplode10() {
+    unset retval
+
+    # Testing with out of bounds
+    explode "	" "0		world"
+    local returnValue=$?
+
+    assertEquals "${#retval[@]}" "3"
+    assertEquals "${retval[0]}" "0"
+    assertEquals "${retval[1]}" ""
+    assertEquals "${retval[2]}" "world"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testVarDump1() {
+    local -a hello=("hello world!" 15 "earth" "love")
+    local compare='array(4) {
+  [0]=>
+  string(12) "hello world!"
+  [1]=>
+  int(15)
+  [2]=>
+  string(5) "earth"
+  [3]=>
+  string(4) "love"
+}'
+
+    local output=$(var_dump hello)
+    assertEquals "$output" "$compare"
+
+    unset hello
+    unset compare
+    unset output
+}
+
+function testVarDump1Underscore() {
+    local -a hello=("hello world!" 15 "earth" "love")
+    local compare='array(4) {
+  [0]=>
+  string(12) "hello world!"
+  [1]=>
+  int(15)
+  [2]=>
+  string(5) "earth"
+  [3]=>
+  string(4) "love"
+}'
+
+    local output=$(varDump hello)
+    assertEquals "$output" "$compare"
+
+    unset hello
+    unset compare
+    unset output
+}
+
+function testVarDump2() {
+    local -a hello=("hello world!" 15 "earth" "love")
+    local compare='string(12) "hello world!"
+int(15)
+string(5) "earth"
+string(4) "love"'
+
+    local output=$(var_dump "${hello[@]}")
+    assertEquals "$output" "$compare"
+
+    unset hello
+    unset compare
+    unset output
+}
+
+function testVarDump2Underscore() {
+    local -a hello=("hello world!" 15 "earth" "love")
+    local compare='string(12) "hello world!"
+int(15)
+string(5) "earth"
+string(4) "love"'
+
+    local output=$(varDump "${hello[@]}")
+    assertEquals "$output" "$compare"
+
+    unset hello
+    unset compare
+    unset output
+}
+
+function testVarDump3() {
+    local hello="world"
+    local output=$(var_dump hello)
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset hello
+    unset output
+}
+
+function testVarDump3Underscore() {
+    local hello="world"
+    local output=$(varDump hello)
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset hello
+    unset output
+}
+
+function testVarDump4() {
+    local output=$(var_dump "hello")
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset output
+}
+
+function testVarDump4Underscore() {
+    local output=$(varDump "hello")
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset output
+}
+
+function testVarDump5() {
+    local output=$(var_dump 'hello')
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset output
+}
+
+function testVarDump5Underscore() {
+    local output=$(varDump 'hello')
+    assertEquals "$output" 'string(5) "hello"'
+
+    unset output
+}
+
+function testVarDump6() {
+    local -A hello=(["hello world"]="earth" [3]="love" ["linux"]="4 ever")
+    local compare='array(4) {
+  [3]=>
+  string(4) "love"
+  ["hello"]=>
+  export(0) ""
+  ["world"]=>
+  export(0) ""
+  ["linux"]=>
+  string(6) "4 ever"
+}'
+
+    local output=$(var_dump hello)
+    assertEquals "$output" "$output"
+
+    unset hello
+    unset compare
+}
+
+function testVarDump6Underscore() {
+    local -A hello=(["hello world"]="earth" [3]="love" ["linux"]="4 ever")
+    local compare='array(4) {
+  [3]=>
+  string(4) "love"
+  ["hello"]=>
+  export(0) ""
+  ["world"]=>
+  export(0) ""
+  ["linux"]=>
+  string(6) "4 ever"
+}'
+
+    local output=$(varDump hello)
+    assertEquals "$output" "$output"
+
+    unset hello
+    unset compare
+}
+
 function testSubstr1() {
     unset retval
 
     substr "abcdef" 0 -1
+    local returnValue=$?
+
+    assertEquals "${#retval}" "5"
+    assertEquals "$retval" "abcde"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testSubstr1CamelCase() {
+    unset retval
+
+    subStr "abcdef" 0 -1
     local returnValue=$?
 
     assertEquals "${#retval}" "5"
@@ -340,10 +820,38 @@ function testSubstr2() {
     unset retval
 }
 
+function testSubstr2CamelCase() {
+    unset retval
+
+    subStr "abcdef" 2 -1
+    local returnValue=$?
+
+    assertEquals "${#retval}" "3"
+    assertEquals "$retval" "cde"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
 function testSubstr3() {
     unset retval
 
     substr "abcdef" 4 -4
+    local returnValue=$?
+
+    assertEquals "${#retval}" "0"
+    assertEquals "$retval" ""
+    assertEquals "$returnValue" "1"
+
+    unset returnValue
+    unset retval
+}
+
+function testSubstr3CamelCase() {
+    unset retval
+
+    subStr "abcdef" 4 -4
     local returnValue=$?
 
     assertEquals "${#retval}" "0"
@@ -368,10 +876,38 @@ function testSubstr4() {
     unset retval
 }
 
+function testSubstr4CamelCase() {
+    unset retval
+
+    subStr "abcdef" -3 -1
+    local returnValue=$?
+
+    assertEquals "${#retval}" "2"
+    assertEquals "$retval" "de"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
 function testSubstr5() {
     unset retval
 
     substr "abcdef" 1
+    local returnValue=$?
+
+    assertEquals "${#retval}" "5"
+    assertEquals "$retval" "bcdef"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testSubstr5CamelCase() {
+    unset retval
+
+    subStr "abcdef" 1
     local returnValue=$?
 
     assertEquals "${#retval}" "5"
@@ -396,10 +932,38 @@ function testSubstr6() {
     unset retval
 }
 
+function testSubstr6CamelCase() {
+    unset retval
+
+    subStr "abcdef" 1 3
+    local returnValue=$?
+
+    assertEquals "${#retval}" "3"
+    assertEquals "$retval" "bcd"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
 function testSubstr7() {
     unset retval
 
     substr "abcdef" 0 4
+    local returnValue=$?
+
+    assertEquals "${#retval}" "4"
+    assertEquals "$retval" "abcd"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testSubstr7CamelCase() {
+    unset retval
+
+    subStr "abcdef" 0 4
     local returnValue=$?
 
     assertEquals "${#retval}" "4"
@@ -424,10 +988,38 @@ function testSubstr8() {
     unset retval
 }
 
+function testSubstr8CamelCase() {
+    unset retval
+
+    subStr "abcdef" 0 8
+    local returnValue=$?
+
+    assertEquals "${#retval}" "6"
+    assertEquals "$retval" "abcdef"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
 function testSubstr9() {
     unset retval
 
     substr "abcdef" -1 1
+    local returnValue=$?
+
+    assertEquals "${#retval}" "1"
+    assertEquals "$retval" "f"
+    assertEquals "$returnValue" "0"
+
+    unset returnValue
+    unset retval
+}
+
+function testSubstr9CamelCase() {
+    unset retval
+
+    subStr "abcdef" -1 1
     local returnValue=$?
 
     assertEquals "${#retval}" "1"
@@ -602,10 +1194,32 @@ function testIsArgument1() {
     unset retval
 }
 
+function testIsArgument1Underscore() {
+    unset retval
+
+    is_argument "--hello"
+    local returnValue="$?"
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+    unset retval
+}
+
 function testIsArgument2() {
     unset retval
 
     isArgument "-hello"
+    local returnValue="$?"
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+    unset retval
+}
+
+function testIsArgument2Underscore() {
+    unset retval
+
+    is_argument "-hello"
     local returnValue="$?"
 
     assertEquals "$retval" "false"
@@ -624,6 +1238,17 @@ function testIsArgument3() {
     unset retval
 }
 
+function testIsArgument3Underscore() {
+    unset retval
+
+    is_argument "- a "
+    local returnValue="$?"
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+    unset retval
+}
+
 function testIsArgument4() {
     unset retval
 
@@ -635,10 +1260,32 @@ function testIsArgument4() {
     unset retval
 }
 
+function testIsArgument4Underscore() {
+    unset retval
+
+    is_argument "-a "
+    local returnValue="$?"
+
+    assertEquals "$retval" "false"
+    assertEquals "$returnValue" "1"
+    unset retval
+}
+
 function testIsArgument5() {
     unset retval
 
     isArgument "-a"
+    local returnValue="$?"
+
+    assertEquals "$retval" "true"
+    assertEquals "$returnValue" "0"
+    unset retval
+}
+
+function testIsArgument5Underscore() {
+    unset retval
+
+    is_argument "-a"
     local returnValue="$?"
 
     assertEquals "$retval" "true"
@@ -659,6 +1306,19 @@ function testCheckDeps1() {
     unset retval
 }
 
+function testCheckDeps1Underscore() {
+    unset retval
+
+    getDate
+    local date1="$retval"
+    getDate
+    local date2="$retval"
+    check_deps "${date1}_unexisting_command mkdir ${date2}_second_unexisting_command"
+
+    assertEquals "${#retval[@]}" "2"
+    unset retval
+}
+
 function testCheckDeps2() {
     unset retval
 
@@ -668,7 +1328,27 @@ function testCheckDeps2() {
     unset retval
 }
 
+function testCheckDeps2Underscore() {
+    unset retval
+
+    checkDeps "ls mkdir"
+
+    assertEquals "${#retval[@]}" "0"
+    unset retval
+}
+
 function testCheckDeps3() {
+    unset retval
+
+    getDate
+    local date1="$retval"
+    checkDeps "ls ${date1}_unexisting_command mkdir"
+
+    assertEquals "${#retval[@]}" "1"
+    unset retval
+}
+
+function testCheckDeps3Underscore() {
     unset retval
 
     getDate
@@ -690,6 +1370,17 @@ function testCheckDeps4() {
     unset retval
 }
 
+function testCheckDeps4Underscore() {
+    unset retval
+
+    getDate
+    local date1="$retval"
+    checkDeps "ls ${date1}_unexisting_command mkdir"
+
+    assertEquals "${retval[0]}" "${date1}_unexisting_command"
+    unset retval
+}
+
 function testGetDate() {
     unset retval
 
@@ -700,6 +1391,14 @@ function testGetDate() {
     unset retval
 }
 
+function testGetDateUnderscore() {
+    unset retval
+
+    get_date
+    local returnValue="$?"
+
+    assertEquals "$returnValue" "0"
+    unset retval
+}
 
 . "${0%/*}/shunit2/source/2.1/src/shunit2"
-
