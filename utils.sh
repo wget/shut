@@ -437,7 +437,7 @@ function warning() {
     unset retval
 
     if isRunInBackground $$; then
-        log user.warning "$*"
+        log "$*" user.warning "$scriptName[$$]"
     fi
 
     if [[ ! -t 1 ]]; then
@@ -469,7 +469,7 @@ function error() {
     unset retval
 
     if isRunInBackground $$; then
-        log user.err "$*"
+        log "$*" user.err "$scriptName[$$]"
     fi
 
     if [[ ! -t 2 ]]; then
@@ -502,7 +502,7 @@ function die() {
     unset retval
 
     if isRunInBackground $$; then
-        log user.err "$*"
+        log "$*" user.err "$scriptName[$$]"
     fi
 
     if [[ ! -t 2 ]]; then
