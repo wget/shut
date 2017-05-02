@@ -572,10 +572,27 @@ function checkDeps() {
 function requireDeps() {
     unset retval
 
-    if ! checkDeps "$@"; then
-        error "${FUNCNAME[1]}: The following commands are not installed:"\
-        "${retval[*]}. Aborted."
-        return 1
+    if ! checkDeps "$*"; then
+        local msg
+
+        if ((${#retval[@]} >= 2)); then
+            msg='The commands '
+            if ((${#retval[@]} == 2)); then
+                msg+="'${retval[0]}' and '${retval[1]}'"
+            else
+                for ((i = 0; i < ${#retval} - 2; i++)); do
+                    msg+="'${retval[i]}', "
+                done
+                msg+="'${retval[$i]}' and "
+                ((i++))
+                msg+="'${retval[$i]}' "
+            fi
+            msg+=" are not installed. Aborted."
+        else
+            msg="The command '${retval[0]}' is not installed. Aborted."
+        fi
+
+        die "${FUNCNAME[1]}: $msg"
     fi
     return 0
 }
