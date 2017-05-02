@@ -833,7 +833,7 @@ function isNumberPositive() {
 ## search will start this number of characters counted from the end of the
 ## string.
 ## @return In $retval, the position starting from 0 where the pattern was
-## found, -1 if this wasn't found.
+## found, -1 if this wasn't found. false if an error occurred.
 ## @retval 0 If the pattern was found.
 ## @retval 1 If the pattern was not found.
 #-------------------------------------------------------------------------------
@@ -841,25 +841,73 @@ function strpos() {
     unset retval
     local string="$1"
     local pattern="$2"
-    local -i offset="$3"
-    local -i stringSize=0
+    if [[ -z "$3" ]]; then
+        local -i offset=0
+    else
+        local -i offset="$3"
+    fi
     if ((offset < 0)); then
-        stringSize=${#string}
-        ((stringSize-=offset))
-        string=${string:$stringSize}
+        if ((-1 * offset > ${#string})); then
+            # shellcheck disable=SC2178
+            retval=false
+            return 1
+        fi
+        string=${string:${#string} - offset}
     else
         string=${string:$offset}
     fi
-    stringSize=${#string}
-    string="${string#*"$pattern"}"
-    if ((stringSize == ${#string})); then
+
+    # The initial state of the automaton (the table of failure function)
+    # corresponding to the empty string.
+    local -i n=${#string}
+    local -i m=${#pattern}
+    # The initial state of the automaton (the table of failure function)
+    # corresponding to the empty string.
+    local -i i=0
+    # The first character of the string
+    local -i j=0
+
+    __kmpBuildFailureFunction "$pattern"
+    local ff=("${retval[@]}")
+    unset retval
+
+    while true; do
+        if ((j == n)); then
+            break
+        fi
+
+        if [[ "${string:j:1}" == "${pattern:i:1}" ]]; then
+            ((i++))
+            ((j++))
+            if ((i == m)); then
+                # shellcheck disable=SC2178
+                retval=$((j - m))
+                break
+            fi
+        elif ((i > 0)); then
+            i=${ff[i]}
+        else
+            ((j++))
+        fi
+    done
+
+    # shellcheck disable=SC2128
+    if [[ -z "$retval" ]]; then
         # shellcheck disable=SC2178
-        retval=false
+        retval=-1
         return 1
     fi
-    # shellcheck disable=SC2178
-    retval=${#string}
+
+    ((retval+=offset))
     return 0
+}
+
+#-------------------------------------------------------------------------------
+## @fn strPos()
+## @details Simple alias to strpos
+#-------------------------------------------------------------------------------
+function strPos() {
+    strpos "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -879,10 +927,10 @@ function __kmpBuildFailureFunction() {
         retval=()
         return 1
     fi
-    local i=0
-    local j=0
+    local -i i=0
+    local -i j=0
     local pattern="$1"
-    local patternLength=${#pattern}
+    local -i len=${#pattern}
 
     # These statements are always true
     # - The first element of the list of prefixes is an empty string
@@ -893,7 +941,8 @@ function __kmpBuildFailureFunction() {
     # shellcheck disable=SC2190
     retval+=(0)
 
-    for ((i = 2; i <= patternLength; i++)); do
+    for ((i = 2; i <= len; i++)); do
+
         j=${retval[i - 1]}
         while true; do
             if [[ "${pattern:j:1}" == "${pattern:i - 1:1}" ]]; then
