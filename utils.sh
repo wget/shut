@@ -296,14 +296,22 @@ function getDate() {
 }
 
 #-------------------------------------------------------------------------------
+## @fn get_date()
+## @details Simple alias to getDate
+#-------------------------------------------------------------------------------
+function get_date() {
+    getDate "$*"
+}
+
+#-------------------------------------------------------------------------------
 ## @fn log()
 ## @details If logger is present, print explicitely a string in the logs with
 ## the priority specified.
 ## @param $msg The message to send to the logs.
 ## @param $level Level of the error corresponds to the priority code used in
 ## @param $script The name of the script responsible of the issue
-## traditional syslog implementations.The priority can be prefixed by a facility
-## which is a code used to specify the type of the program.
+## traditional syslog implementations. The priority can be prefixed by a
+## facility which is a code used to specify the type of the program.
 ## src.: https://en.wikipedia.org/wiki/Syslog#Facility
 ## If $level is not specified, it defaults to "user.err".
 #-------------------------------------------------------------------------------
@@ -316,6 +324,7 @@ function log() {
 
     if type logger >/dev/null 2>&1; then
         if [[ -z "$3" ]]; then
+            ## See getScriptName() to know more why we use BASH_SOURCE here.
             logger -p "$level" "${BASH_SOURCE[ ${#BASH_SOURCE[@]} - 1 ]##*/}: $1"
         else
             logger -p "$level" "$3: $1"
@@ -351,7 +360,7 @@ function info() {
     unset retval
 
     if isRunInBackground $$; then
-        log user.info "$*"
+        log "$*" user.info "$scriptName[$$]"
     fi
 
     # Even if run in the background, this does not mean the output is
