@@ -851,7 +851,7 @@ function strpos() {
         string=${string:$offset}
     fi
     stringSize=${#string}
-    string="${string%$pattern}"
+    string="${string#*"$pattern"}"
     if ((stringSize == ${#string})); then
         # shellcheck disable=SC2178
         retval=false
