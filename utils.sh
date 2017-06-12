@@ -593,6 +593,7 @@ function is_argument() {
 #-------------------------------------------------------------------------------
 function checkDeps() {
     unset retval
+    local i
 
     for i in $1; do
         if ! type "$i" >/dev/null 2>&1; then
