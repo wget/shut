@@ -4,4 +4,4 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: pwd && bash ./utils_test.sh
+      - run: pwd; ls; bash ./utils_test.sh
