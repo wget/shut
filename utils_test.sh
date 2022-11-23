@@ -1401,4 +1401,58 @@ function testGetDateUnderscore() {
     unset retval
 }
 
+function testInArray1() {
+    unset retval
+
+    local array=()
+    array+=('hello world')
+    array+=('i love arch')
+
+    inArray 'i love arch' array[@]
+    assertEquals "$?" "0"
+    unset retval
+}
+
+function testInArray2() {
+    unset retval
+
+    local array=()
+    array+=('hello world')
+    array+=('i love arch')
+
+    inArray 'maybe not' array[@]
+    assertEquals "$?" "1"
+    unset retval
+}
+
+function testInArray3() {
+    unset retval
+
+    local array=""
+
+    inArray 'maybe not' array[@]
+    assertEquals "$?" "1"
+    unset retval
+}
+
+function testInArray4() {
+    unset retval
+
+    local array=""
+
+    inArray array[@]
+    assertEquals "$?" "1"
+    unset retval
+}
+
+function testInArray5() {
+    unset retval
+
+    local array=()
+
+    inArray array[@]
+    assertEquals "$?" "1"
+    unset retval
+}
+
 . "${0%/*}/shunit2/source/2.1/src/shunit2"
