@@ -1741,7 +1741,7 @@ function in_array() {
     fi
     local -a array=("${!2}")
     local arraySize=${#array[@]}
-    for ((i = 1; i < arraySize; i++)) {
+    for ((i = 0; i < arraySize; i++)) {
         if [ "${array[i]}" == "$pattern" ]; then
             retval=true
             return 0
